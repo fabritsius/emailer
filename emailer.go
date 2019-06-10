@@ -33,14 +33,24 @@ func New(template string, subject string) *Mail {
 }
 
 // SendToMany sends Mail to every recipient
-func (m *Mail) SendToMany(recipients []map[string]string, cfg *Config) error {
+func (m *Mail) SendToMany(recipients []map[string]string, cfg *Config) []error {
+	errors := make(chan error)
+	defer close(errors)
+
 	for _, recipient := range recipients {
-		if err := m.SendTo(recipient, cfg); err != nil {
-			return err
+		go func(recipient map[string]string, cfg *Config) {
+			errors <- m.SendTo(recipient, cfg)
+		}(recipient, cfg)
+	}
+
+	var sendErrors []error
+	for range recipients {
+		if err := <-errors; err != nil {
+			sendErrors = append(sendErrors, err)
 		}
 	}
 
-	return nil
+	return sendErrors
 }
 
 // SendTo sends Mail to a recipient
