@@ -21,6 +21,8 @@ And you want to send an email to each one of them. Here is how you can do that:
 package main
 
 import (
+    "fmt"
+
     "github.com/fabritsius/emailer"
     "github.com/fabritsius/envar"
     "github.com/fabritsius/csvier"
@@ -49,11 +51,13 @@ func main() {
 	}
 
     // Create Mail object with template and subject
-    mail := emailer.New(temp, "Just a letter")
+    mail := emailer.New(temp, "A letter from a Program")
 
-    // Send emails to recipients
-    if err := mail.SendToMany(recipients, &cfg); err != nil {
-        panic(err)
+    // Send emails to recipients and collect errors
+    if errors := mail.SendToMany(recipients, &cfg); len(errors) > 0 {
+        for i, err := range errors {
+            fmt.Printf("[error %d] %s\n", i, err)
+        }
     }
 }
 
@@ -79,6 +83,10 @@ Program
 ## TODO
 
 - [x] Add core features
+- [x] Make send loop concurrent
 - [ ] Add testing
-- [ ] Make send loop asynchronous
 - [ ] Add support for more use cases
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
