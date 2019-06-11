@@ -42,22 +42,25 @@ func main() {
     // Fill mail config using environment variables
     if err := envar.Fill(&cfg); err != nil {
         // All envs has to be set:
-        // 	MAIL_NAME – sender name
-        // 	MAIL_ADDR – sender email address
-        // 	MAIL_PASS – sender email password
-        // 	MAIL_SERV – email server address
-        // 	MAIL_PORT – email server port
+        //  MAIL_NAME – sender name
+        //  MAIL_ADDR – sender email address
+        //  MAIL_PASS – sender email password
+        //  MAIL_SERV – email server address
+        //  MAIL_PORT – email server port
         panic(err)
 	}
 
     // Create Mail object with template and subject
     mail := emailer.New(temp, "A letter from a Program")
 
+    // Change fields which are used to set recipient Name and Address
+    //  this is optional and in this case default values are used
+    userFields := emailer.ChangeUserFields("NAME", "MAIL")
+
     // Send emails to recipients and collect errors
-    if errors := mail.SendToMany(recipients, &cfg); len(errors) > 0 {
-        for i, err := range errors {
-            fmt.Printf("[error %d] %s\n", i, err)
-        }
+    errors := mail.SendToMany(recipients, &cfg, userFields)
+    for i, err := range errors {
+        fmt.Printf("[error %d] %s\n", i, err)
     }
 }
 
@@ -85,7 +88,6 @@ Program
 - [x] Add core features
 - [x] Make send loop concurrent
 - [ ] Add testing
-- [ ] Add support for more use cases
 
 ## License
 
