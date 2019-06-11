@@ -33,14 +33,17 @@ func New(template string, subject string) *Mail {
 }
 
 // SendToMany sends Mail to every recipient
-func (m *Mail) SendToMany(recipients []map[string]string, cfg *Config) []error {
+func (m *Mail) SendToMany(recipients []map[string]string, cfg *Config,
+	options ...func(*userFields)) []error {
+
 	errors := make(chan error)
 	defer close(errors)
 
-	for _, recipient := range recipients {
-		go func(recipient map[string]string, cfg *Config) {
-			errors <- m.SendTo(recipient, cfg)
-		}(recipient, cfg)
+	for _, r := range recipients {
+		go func(recipient map[string]string, cfg *Config, options []func(*userFields)) {
+			// build a message for each recipient and use a channel to collect send errors
+			errors <- m.SendTo(recipient, cfg, options...)
+		}(r, cfg, options)
 	}
 
 	var sendErrors []error
@@ -54,9 +57,17 @@ func (m *Mail) SendToMany(recipients []map[string]string, cfg *Config) []error {
 }
 
 // SendTo sends Mail to a recipient
-func (m *Mail) SendTo(recipient map[string]string, cfg *Config) error {
+func (m *Mail) SendTo(recipient map[string]string, cfg *Config,
+	options ...func(*userFields)) error {
+
+	// specify which fields are used to set recipient Name and Address
+	fields := userFields{Name: "NAME", Mail: "MAIL"}
+	for _, option := range options {
+		option(&fields)
+	}
+
 	from := mail.Address{Name: cfg.Name, Address: cfg.Mail}
-	to := mail.Address{Name: recipient["NAME"], Address: recipient["MAIL"]}
+	to := mail.Address{Name: recipient[fields.Name], Address: recipient[fields.Mail]}
 
 	headers := buildHeaders(from, to, m.Subject)
 	messageBody, err := parseMessage(m.Template, &recipient)
@@ -102,6 +113,23 @@ func (m *Mail) SendTo(recipient map[string]string, cfg *Config) error {
 	}
 
 	return nil
+}
+
+// userFields specifies which fields of recipient map
+// are used to set a Name and Address
+type userFields struct {
+	Name string
+	Mail string
+}
+
+// ChangeUserFields is an option for SendTo() and SendToMany()
+// changes which fields of recipient map are used to set a Name and Address
+// defaults are "NAME" and "MAIL"
+func ChangeUserFields(name string, mail string) func(f *userFields) {
+	return func(f *userFields) {
+		f.Name = name
+		f.Mail = mail
+	}
 }
 
 // parseMessage creates a message from a template
