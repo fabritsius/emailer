@@ -83,7 +83,7 @@ Best wishes to you,
 Program
 ```
 
-You can find this example with data in [this gist](https://gist.github.com/fabritsius/3f4b0a1b3a6a275c9411eb74e3ed2830).
+You can find a better example with data in [this gist](https://gist.github.com/fabritsius/3f4b0a1b3a6a275c9411eb74e3ed2830).
 
 ## TODO
 
