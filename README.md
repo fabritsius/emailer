@@ -85,6 +85,16 @@ Program
 
 You can find a better example with data in [this gist](https://gist.github.com/fabritsius/3f4b0a1b3a6a275c9411eb74e3ed2830).
 
+## Features
+
+- use `New(template, subject)` to create `Mail` object
+- use `SendTo` or `SendToMany` functions on the `Mail` object
+- `SendTo(recipient, config)` allows to send an email to a recipient
+- `SendToMany(recipients, config)` sends emails to multiple recipients
+- both methods can take `ChangeUserFields` function as an optional parameter
+
+Example of use can be found above. Full method documentation can be found on [GoDoc page](https://godoc.org/github.com/fabritsius/emailer).
+
 ## TODO
 
 - [x] Add core features
