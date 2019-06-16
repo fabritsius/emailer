@@ -8,14 +8,7 @@ This Go module simplifies a process of sending HTML emails to multiple users.
 
 Simple use case.
 
-You have a `recipients.csv` file with user emails (imagine there are more lines):
-
-```csv
-ID, NAME, MAIL, PET
-1,Anton,anton@example.com,cat
-```
-
-And you want to send an email to each one of them. Here is how you can do that:
+You want to send an email to each one of your subscribers (here just one). Here is how you can do that:
 
 ```go
 package main
@@ -24,41 +17,36 @@ import (
     "fmt"
 
     "github.com/fabritsius/emailer"
-    "github.com/fabritsius/envar"
-    "github.com/fabritsius/csvier"
 )
 
 func main() {
-    // Get a simple email template
+    // Get an email template
     temp := simpleTemplate()
 
-    // Get a slice of recipients from a file
-    recipients, err := csvier.ReadFile("recipients.csv")
-    if err != nil {
-        panic(err)
+    // Example user data
+    user := map[string]string{
+        "NAME": "Anton",
+        "MAIL": "user@example.com",
+        "PET":  "cat",
     }
-	
-    cfg := emailer.Config{}
-    // Fill mail config using environment variables
-    if err := envar.Fill(&cfg); err != nil {
-        // All envs has to be set:
-        //  MAIL_NAME – sender name
-        //  MAIL_ADDR – sender email address
-        //  MAIL_PASS – sender email password
-        //  MAIL_SERV – email server address
-        //  MAIL_PORT – email server port
-        panic(err)
-	}
+
+    // Create a slice of recipients (here is just one)
+    recipients := []map[string]string{user}
+
+    // Create a config for smtp connection
+    cfg := emailer.Config{
+        Name:     "Program",
+        Mail:     "sender@example.com",
+        Password: "unbreakable",
+        Server:   "smtp.example.com",
+        Port:     "465",
+    }
 
     // Create Mail object with template and subject
     mail := emailer.New(temp, "A letter from a Program")
 
-    // Change fields which are used to set recipient Name and Address
-    //  this is optional and in this case default values are used
-    userFields := emailer.ChangeUserFields("NAME", "MAIL")
-
     // Send emails to recipients and collect errors
-    errors := mail.SendToMany(recipients, &cfg, userFields)
+    errors := mail.SendToMany(recipients, &cfg)
     for i, err := range errors {
         fmt.Printf("[error %d] %s\n", i, err)
     }
@@ -83,7 +71,7 @@ Best wishes to you,
 Program
 ```
 
-You can find a better example with data in [this gist](https://gist.github.com/fabritsius/3f4b0a1b3a6a275c9411eb74e3ed2830).
+You can find a better example without hard coded variables in [this gist](https://gist.github.com/fabritsius/3f4b0a1b3a6a275c9411eb74e3ed2830).
 
 ## Features
 
@@ -93,7 +81,7 @@ You can find a better example with data in [this gist](https://gist.github.com/f
 - `SendToMany(recipients, config)` sends emails to multiple recipients
 - both methods can take `ChangeUserFields` function as an optional parameter
 
-Example of use can be found above. Full method documentation can be found on [GoDoc page](https://godoc.org/github.com/fabritsius/emailer).
+Full method documentation can be found on [GoDoc page](https://godoc.org/github.com/fabritsius/emailer).
 
 ## TODO
 
